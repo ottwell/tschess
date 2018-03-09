@@ -16,14 +16,14 @@ export namespace initializer {
     export function initPieces(id: string): List<gamePiece> {
         if (id == "white") {
             return new List<gamePiece>([
-                // new pawn("pw1", pieceTypes.pawn, true, false, 9),
-                // new pawn("pw2", pieceTypes.pawn, true, false, 10),
-                // new pawn("pw3", pieceTypes.pawn, true, false, 11),
-                // new pawn("pw4", pieceTypes.pawn, true, false, 12),
-                // new pawn("pw5", pieceTypes.pawn, true, false, 13),
-                // new pawn("pw6", pieceTypes.pawn, true, false, 14),
-                // new pawn("pw7", pieceTypes.pawn, true, false, 15),
-                // new pawn("pw8", pieceTypes.pawn, true, false, 16),
+                new pawn("pw1", pieceTypes.pawn, true, false, 9),
+                new pawn("pw2", pieceTypes.pawn, true, false, 10),
+                new pawn("pw3", pieceTypes.pawn, true, false, 11),
+                new pawn("pw4", pieceTypes.pawn, true, false, 12),
+                new pawn("pw5", pieceTypes.pawn, true, false, 13),
+                new pawn("pw6", pieceTypes.pawn, true, false, 14),
+                new pawn("pw7", pieceTypes.pawn, true, false, 15),
+                new pawn("pw8", pieceTypes.pawn, true, false, 16),
                 new knight("knw1", pieceTypes.knight, true, false, 2),
                 new knight("knw2", pieceTypes.knight, true, false, 7),
                 new tower("tw1", pieceTypes.tower, true, false, 1),
@@ -69,14 +69,14 @@ export namespace initializer {
                 { id: 6, occupant: player.pieces.Where(p => p.id === "rw2").First() },
                 { id: 7, occupant: player.pieces.Where(p => p.id === "knw2").First() },
                 { id: 8, occupant: player.pieces.Where(p => p.id === "tw2").First() },
-                // { id: 9, occupant: player.pieces.Where(p => p.id === "pw1").First() },
-                // { id: 10, occupant: player.pieces.Where(p => p.id === "pw2").First() },
-                // { id: 11, occupant: player.pieces.Where(p => p.id === "pw3").First() },
-                // { id: 12, occupant: player.pieces.Where(p => p.id === "pw4").First() },
-                // { id: 13, occupant: player.pieces.Where(p => p.id === "pw5").First() },
-                // { id: 14, occupant: player.pieces.Where(p => p.id === "pw6").First() },
-                // { id: 15, occupant: player.pieces.Where(p => p.id === "pw7").First() },
-                // { id: 16, occupant: player.pieces.Where(p => p.id === "pw8").First() }
+                { id: 9, occupant: player.pieces.Where(p => p.id === "pw1").First() },
+                { id: 10, occupant: player.pieces.Where(p => p.id === "pw2").First() },
+                { id: 11, occupant: player.pieces.Where(p => p.id === "pw3").First() },
+                { id: 12, occupant: player.pieces.Where(p => p.id === "pw4").First() },
+                { id: 13, occupant: player.pieces.Where(p => p.id === "pw5").First() },
+                { id: 14, occupant: player.pieces.Where(p => p.id === "pw6").First() },
+                { id: 15, occupant: player.pieces.Where(p => p.id === "pw7").First() },
+                { id: 16, occupant: player.pieces.Where(p => p.id === "pw8").First() }
             ]);
         }
         else {

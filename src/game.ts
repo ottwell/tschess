@@ -49,10 +49,10 @@ export class game {
         //change current player
         //change active piece
         game.currentPlayer.currentActivePiece = undefined;
-        // let current = game.currentPlayer;
-        // let nonCurrent = game.nonCurrentPlayer
-        // game.currentPlayer = nonCurrent;
-        // game.nonCurrentPlayer = current;
+        let current = game.currentPlayer;
+        let nonCurrent = game.nonCurrentPlayer
+        game.currentPlayer = nonCurrent;
+        game.nonCurrentPlayer = current;
     }
     
 }

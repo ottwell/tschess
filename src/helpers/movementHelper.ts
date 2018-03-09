@@ -44,13 +44,22 @@ export namespace movementHelper {
         return piece;
     } 
 
-    export function handlePlayerMove (player: player, startPoint: initializer.occupiedTile, dest: initializer.occupiedTile, isAttack: boolean, victim: any): player {
-        player.occupiedTiles.Remove(startPoint);
-        player.occupiedTiles.Add(dest);
-        player.moves.Add(new move(startPoint.id, dest.id, player.currentActivePiece, isAttack, victim))
-        return player;
+    export function handlePlayersMove (game: game, startPoint: initializer.occupiedTile, dest: initializer.occupiedTile, isAttack: boolean, victim: any): game {
+        game.currentPlayer.occupiedTiles.Remove(startPoint);
+        game.currentPlayer.occupiedTiles.Add(dest);
+        game.currentPlayer.moves.Add(new move(startPoint.id, dest.id, game.currentPlayer.currentActivePiece, isAttack, victim))
+        if(isAttack){
+            game.nonCurrentPlayer = handleAttack(game.nonCurrentPlayer, dest, victim);
+        }
+        return game;
     }
     
+    function handleAttack(player: player, dest: initializer.occupiedTile, victim: gamePiece): player {
+        victim.isDead = true;
+        player.pieces.Remove(victim);
+        player.occupiedTiles.Remove(player.occupiedTiles.Where(x => x.id === dest.id).FirstOrDefault());
+        return player;
+    }
 
 
 

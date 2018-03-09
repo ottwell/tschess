@@ -61,10 +61,8 @@ export class player {
         var victim = undefined;
         if (isAttack) {
             victim = game.nonCurrentPlayer.pieces.Where(pi => pi.currentLocation === destination.id).First();
-            victim.isDead = true;
-            game.nonCurrentPlayer.pieces.Remove(victim);
         }
-        game.currentPlayer = moveHandler.handlePlayerMove(game.currentPlayer, startPoint, destination, isAttack, victim);
+        game = moveHandler.handlePlayersMove(game, startPoint, destination, isAttack, victim);
         visHelper.move(startPoint.id, destination.id);
         callback(game);
     }
