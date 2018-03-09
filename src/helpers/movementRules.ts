@@ -2,7 +2,8 @@ import {
     gamePiece,
     pieceTypes,
     pawn,
-    queen
+    queen,
+    king
 
 } from '../pieces';
 import {
@@ -19,10 +20,13 @@ export namespace movementRules{
 
     //public 
     export function checkAvailableMoves(piece: gamePiece, game: game): List<number> {
-        var legalBoundaryMoves = checkBoundaries(piece);
-        var legalBoardMoves1 = checkBlocks(piece, legalBoundaryMoves, game.currentPlayer);
-        var legalBoardMoves2 = checkBlocks(piece, legalBoardMoves1, game.nonCurrentPlayer, true);
-        return legalBoardMoves2;
+        if(!exposingKing(piece, game)){
+            var legalBoundaryMoves = checkBoundaries(piece);
+            var legalBoardMoves1 = checkBlocks(piece, legalBoundaryMoves, game.currentPlayer);
+            var legalBoardMoves2 = checkBlocks(piece, legalBoardMoves1, game.nonCurrentPlayer, true);
+            return legalBoardMoves2;
+        }
+        return new List<number>();
     }
 
     export function isAttack(tiles: List<number>, targetTile: initializer.occupiedTile): boolean{
@@ -36,6 +40,37 @@ export namespace movementRules{
     }
 
     //helpers
+    function exposingKing(piece: gamePiece, game: game): boolean {
+        if(!isDirectLine(piece, game.nonCurrentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king)) return false;
+        //to do: analyze threats
+
+    }
+
+    function isDirectLine(piece: gamePiece, king: king): boolean {
+        let diff = Math.abs(piece.currentLocation - king.currentLocation);
+        if(diff % 9 === 0) return true;
+        if(diff % 8 === 0) return true;
+        if(diff % 7 === 0) return true;
+        if(diff > 7) return false;
+        if(sameRow(piece.currentLocation, king.currentLocation))return true;
+        return false;
+    }
+
+    function sameRow(location1: number, location2: number): boolean{
+        let row1 = Math.floor(location1 / 8);
+        let row2 = Math.floor(location2 / 8);
+        if(location1 % 8 !== 0 && location2 % 8 !== 0){
+            if (row1 === row2) return true;
+        }
+        if(location1 % 8 === 0){
+            if(row1 - 1 === row2) return true;
+        }
+        if(location2 % 8 === 0){
+            if(row2 - 1 === row1) return true;
+        }
+        return false;
+    }
+    
     function checkBoundaries(piece: gamePiece): List<number> {
         var rawMoves = piece.moveSet.ToArray().filter((move) => {
             if (move + piece.currentLocation < 65 && move + piece.currentLocation > 0)
@@ -223,7 +258,7 @@ export namespace movementRules{
         let res = new List<number>();
         switch (piece.type) {
             case pieceTypes.pawn:
-                res = checkBlockPawn(piece, locations, player);
+                res = checkBlockPawn(piece, locations, player, isOpponent);
                 break;
             case pieceTypes.knight:
                     res = checkBlockKnight(locations, player, isOpponent);
@@ -278,20 +313,39 @@ export namespace movementRules{
         }
     }
     
-    function checkBlockPawn(piece: gamePiece, locations: List<number>, player: player): List<number> { //includes color related move check
+    function checkBlockPawn(piece: gamePiece, locations: List<number>, player: player, isOpponent: boolean = false): List<number> { //includes color related move check
         let pawn = piece as pawn;
-        let _firstCut = new List<number>();
-        if (player.id === "white") {
-            _firstCut = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c < piece.currentLocation).ToList());
+        if (pawn.isWhite) {
+            if(isOpponent){
+                let victim1 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation + 7).FirstOrDefault();
+                if(!victim1) 
+                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation + 7))
+                let victim2 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation + 9).FirstOrDefault();
+                if(!victim2) 
+                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation + 9))
+            }
+            else
+                locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c < pawn.currentLocation).ToList());
         }
         else {
-            _firstCut = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c > piece.currentLocation).ToList());
+            if(isOpponent){
+                let victim1 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation - 7).FirstOrDefault();
+                if(!victim1) 
+                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation - 7))
+                let victim2 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation - 9).FirstOrDefault();
+                if(!victim2) 
+                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation - 9))
+            }
+            else
+                locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c > pawn.currentLocation).ToList());
         }
         if (!pawn.isFirstMove) {
-            return _firstCut.Except(player.occupiedTiles.Select(z => z.id).ToList());
+            if(isOpponent)
+                return locations;
+            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
         }
         else {
-            let _tempMoves = _firstCut.Except(player.occupiedTiles.Select(z => z.id).ToList());
+            let _tempMoves = locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
             if (_tempMoves.Contains(piece.currentLocation + 16) && !_tempMoves.Contains(piece.currentLocation + 8)) {
                 _tempMoves.Remove(piece.currentLocation + 16);
             }

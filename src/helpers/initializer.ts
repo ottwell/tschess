@@ -163,7 +163,7 @@ export namespace initializer {
             this.id = Id;
             this.threatWhite = tw;
             this.threatBlack = tw ? false : true;
-            this. potentialAssassins = assassins;
+            this.potentialAssassins = assassins;
         }
     }
 }
