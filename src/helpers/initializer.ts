@@ -1,8 +1,11 @@
 import { gamePiece, pieceTypes, pawn, knight, rook, tower, queen, king } from "../pieces";
 import { player } from "../player";
 import {
-    movementRules as rulesHelper
+    rulesHelper
 } from "../helpers/movementRules";
+import {
+    threatHelper
+} from "../helpers/threatHelper";
 import {
     visualUI as visHelper
 } from "../helpers/visualUI";
@@ -101,17 +104,17 @@ export namespace initializer {
         }
     }
 
-    export function initThreats(player: player): List<threat> {
+    export function initThreats(player: player): List<threatHelper.threat> {
         if (player.id === "white") {
-            return new List<threat>([
-                new threat(20, true, new List<pieceTypes>([pieceTypes.knight])),
-                new threat(22, true, new List<pieceTypes>([pieceTypes.knight])), 
+            return new List<threatHelper.threat>([
+                new threatHelper.threat(20, true),
+                new threatHelper.threat(22, true), 
             ]);
         }
         else {
-            return new List<threat>([
-                new threat(44, false, new List<pieceTypes>([pieceTypes.knight])),
-                new threat(46, false, new List<pieceTypes>([pieceTypes.knight])), 
+            return new List<threatHelper.threat>([
+                new threatHelper.threat(44, false),
+                new threatHelper.threat(46, false), 
             ]);
         }
 
@@ -154,16 +157,5 @@ export namespace initializer {
         }
     }
 
-    export class threat {
-        id: number;
-        threatWhite: boolean;
-        threatBlack: boolean;
-        potentialAssassins: List<pieceTypes>;
-        constructor(Id: number, tw: boolean, assassins: List<pieceTypes>) {
-            this.id = Id;
-            this.threatWhite = tw;
-            this.threatBlack = tw ? false : true;
-            this.potentialAssassins = assassins;
-        }
-    }
+    
 }

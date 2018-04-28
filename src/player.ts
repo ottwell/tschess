@@ -1,6 +1,6 @@
 import { gamePiece, pieceTypes } from "./pieces";
 import {
-    movementRules as rulesHelper
+    rulesHelper
 } from "./helpers/movementRules";
 import {
     movementHelper as moveHandler
@@ -9,7 +9,9 @@ import {
     move
 }from "./helpers/movementHelper";
 import { game } from './game';
-
+import {
+    threatHelper
+} from "./helpers/threatHelper";
 import {
     visualUI as visHelper
 } from "./helpers/visualUI";
@@ -27,7 +29,7 @@ export class player {
     isInCheck: boolean;
     pieces: List<gamePiece>;
     occupiedTiles: List<initializer.occupiedTile>;
-    threats: List<initializer.threat>;
+    threats: List<threatHelper.threat>;
     currentActivePiece: gamePiece;
     moves: List<move>;
 
@@ -46,7 +48,7 @@ export class player {
 
     checkMove(piece: gamePiece, game: game): any {
         game.currentPlayer.currentActivePiece = piece;
-        let x: number;
+        //check if piece can move without exposing king, then get all possible locations
         piece.availableLocations = rulesHelper.checkAvailableMoves(piece, game);
         piece.availableLocations.ForEach((tile) => { visHelper.highlightTile(tile) });
     }

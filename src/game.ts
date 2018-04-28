@@ -1,7 +1,7 @@
 import { gamePiece } from "./pieces";
 import { player } from "./player";
 import {
-    movementRules as rulesHelper
+    rulesHelper
 } from "./helpers/movementRules";
 import {
     visualUI as visHelper
@@ -46,7 +46,7 @@ export class game {
 
     initCheckList(game: game): void{
         //check mate check
-        //change current player
+        //change current player -- done
         //change active piece
         game.currentPlayer.currentActivePiece = undefined;
         let current = game.currentPlayer;

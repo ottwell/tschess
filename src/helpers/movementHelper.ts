@@ -12,7 +12,7 @@ import {
 } from '../player';
 import { initializer } from './initializer';
 import {
-    movementRules as rulesHelper
+    rulesHelper
 } from "./movementRules";
 
 import {
