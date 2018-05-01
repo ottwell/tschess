@@ -20,13 +20,12 @@ export namespace rulesHelper {
 
     //public 
     export function checkAvailableMoves(piece: gamePiece, game: game): List<number> {
-        if (!exposingKing(piece, game)) {
-            var legalBoundaryMoves = checkBoundaries(piece);
-            var legalBoardMoves1 = checkBlocks(piece, legalBoundaryMoves, game.currentPlayer);
-            var legalBoardMoves2 = checkBlocks(piece, legalBoardMoves1, game.nonCurrentPlayer, true);
-            return legalBoardMoves2;
-        }
-        return new List<number>();
+        let initialLegalMoves = checkBoundaries(piece);
+        let legalKingProtectionMoves = exposingKing(piece, game, initialLegalMoves);
+        if(legalKingProtectionMoves.Count() == 0) return legalKingProtectionMoves;
+        let legalBoardMoves = checkBlocks(piece, legalKingProtectionMoves, game.currentPlayer);
+        let legalBoardMoves2 = checkBlocks(piece, legalBoardMoves, game.nonCurrentPlayer, true);
+        return legalBoardMoves2;
     }
 
     export function isAttack(tiles: List<number>, targetTile: initializer.occupiedTile): boolean {
@@ -39,21 +38,35 @@ export namespace rulesHelper {
         return false;
     }
 
-    
 
-    
 
-    //helpers
-    
-    function exposingKing(piece: gamePiece, game: game): boolean {
+
+
+
+
+    //#region king protection
+
+    function exposingKing(piece: gamePiece, game: game, initialLegalMoves: List<number>): List<number> {
+        let result = new List<number>();
         let target = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
-        if (!isDirectLine(piece, target)) return false;
+        if (!isDirectLine(piece, target)) return initialLegalMoves; //1.is there a direct line between the moving piece and its king
         let line = getLine(piece, target);
+        let locationsToCheck1 = getLocationsBetweenTwoPieces(line, piece.currentLocation, target.currentLocation);
+        if (blockersInLocations(locationsToCheck1, game)) return initialLegalMoves; //2. are there other pieces between the moving piece and its king
+        let assassin = potentialAssassin(line, piece.currentLocation, game); //3. is there an enemy piece in line that can kill the king
+        if (!assassin) return initialLegalMoves;
+        let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
+        if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
+        let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
+        return initialLegalMoves.Intersect(totalLineMoves); //return only moves that are part of the piece moveset and are on the line
+    }
 
-        //to do:
-        //1. check if there are other defenders (from both armies) closer to the king. if so, return false
-        //2. check line between defender and target, and see if there is a potential assassin with a move set that can attack the king
-
+    function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
+        let AlliedLocations = game.currentPlayer.occupiedTiles.Select(x => x.id);
+        let enemyLocations = game.nonCurrentPlayer.occupiedTiles.Select(x => x.id);
+        if (AlliedLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        if (enemyLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        return false;
     }
 
     function isDirectLine(defender: gamePiece, target: gamePiece): boolean {
@@ -66,22 +79,22 @@ export namespace rulesHelper {
         return false;
     }
 
-    function getLine(assassin: gamePiece, target: gamePiece): line {
+    function getLine(assassin: gamePiece, target: gamePiece): number {
         let diff = assassin.currentLocation - target.currentLocation;
         if (diff % 9 === 0) {
-            if (diff > 0) return line.plus9;
-            else return line.minus9
+            if (diff > 0) return 9;
+            else return -9
         }
         if (diff % 8 === 0) {
-            if (diff > 0) return line.plus8;
-            else return line.minus8
+            if (diff > 0) return 8;
+            else return -8
         }
         if (diff % 7 === 0) {
-            if (diff > 0) return line.plus7;
-            else return line.minus7;
+            if (diff > 0) return 7;
+            else return -7;
         }
-        if (diff > 0) return line.rightSide;
-        else return line.leftSide;
+        if (diff > 0) return 1;
+        else return -1;
     }
 
 
@@ -99,6 +112,161 @@ export namespace rulesHelper {
         }
         return false;
     }
+
+
+    function getLocationsBetweenTwoPieces(line: number, from: number, to: number): List<number> {
+        let result = new List<number>();
+        let bigNum = from > to ? from : to;
+        let smallNum = from > to ? to : from;
+        switch (line) {
+            case 1:
+                while (smallNum < bigNum) {
+                    smallNum++;
+                    if (smallNum < bigNum)
+                        result.Add(smallNum);
+                }
+                break;
+            case -1:
+                while (smallNum < bigNum) {
+                    bigNum--;
+                    if (smallNum < bigNum)
+                        result.Add(bigNum);
+                }
+                break;
+            case 9:
+                while (smallNum < bigNum) {
+                    smallNum += 9;
+                    if (smallNum < bigNum)
+                        result.Add(smallNum);
+                }
+                break;
+            case -9:
+                while (smallNum < bigNum) {
+                    bigNum -= 9;
+                    if (smallNum < bigNum)
+                        result.Add(bigNum);
+                }
+                break;
+            case 8:
+                while (smallNum < bigNum) {
+                    smallNum += 8;
+                    if (smallNum < bigNum)
+                        result.Add(smallNum);
+                }
+                break;
+            case -8:
+                while (smallNum < bigNum) {
+                    bigNum -= 8;
+                    if (smallNum < bigNum)
+                        result.Add(bigNum);
+                }
+                break;
+            case 7:
+                while (smallNum < bigNum) {
+                    smallNum += 7;
+                    if (smallNum < bigNum)
+                        result.Add(smallNum);
+                }
+                break;
+            case -7:
+                while (smallNum < bigNum) {
+                    bigNum -= 7;
+                    if (smallNum < bigNum)
+                        result.Add(bigNum);
+                }
+                break;
+        }
+        return result;
+    }
+
+    function getLocationsBetweenPieceAndBoundary(line: number, from: number): List<number> {
+        let result = new List<number>();
+        let rightBoundary = from % 8 == 0 ? from : (Math.ceil(from / 8)) * 8;
+        let leftBoundary = from % 8 == 1 ? from : (Math.floor(from / 8)) * 8 + 1;
+        let limit: number;
+        let index = from;
+        switch (line) {
+            case 1:
+                limit = rightBoundary;
+                while (index < limit) {
+                    index++;
+                    if (index < limit)
+                        result.Add(index);
+                }
+                break;
+            case -1:
+                limit = leftBoundary;
+                while (index > limit) {
+                    index--;
+                    if (index > limit)
+                        result.Add(index);
+                }
+                break;
+            case 9:
+                while (index < 65 && index % 8 != 0) {
+                    index += 9;
+                    if (index < 65)
+                        result.Add(index);
+                }
+                break;
+            case -9:
+                while (index > 0 && index % 8 != 1) {
+                    index -= 9;
+                    if (index > 0)
+                        result.Add(index);
+                }
+                break;
+            case 8:
+                while (index < 65) {
+                    index += 8;
+                    if (index < 65)
+                        result.Add(index);
+                }
+                break;
+            case -8:
+                while (index > 0) {
+                    index -= 8;
+                    if (index > 0)
+                        result.Add(index);
+                }
+                break;
+            case 7:
+                while (index < 65 && index % 8 != 1) {
+                    index += 7;
+                    if (index < 65)
+                        result.Add(index);
+                }
+                break;
+            case -7:
+                while (index < 0 && index % 8 != 0) {
+                    index -= 7;
+                    if (index < 0)
+                        result.Add(index);
+                }
+                break;
+        }
+        return result;
+    }
+
+    function potentialAssassin(line: number, from: number, game: game): gamePiece {
+        let locations = getLocationsBetweenPieceAndBoundary(line, from);
+        if (locations.Count() == 0) return null;
+        let assassin = game.nonCurrentPlayer.pieces.Where(x => locations.Contains(x.currentLocation)).FirstOrDefault();
+        if (!assassin) return null;
+        if (assassin.type === pieceTypes.queen) return assassin;
+        if (assassin.type === pieceTypes.rook) {
+            if (line == 9 || line == -9 || line == 7 || line == -7) return assassin;
+        }
+        if (assassin.type === pieceTypes.tower) {
+            if (line == 8 || line == -8 || line == 1 || line == -1) return assassin;
+        }
+        return null;
+    }
+    //#endregion
+
+    //#region boundaries
+
+
 
     function checkBoundaries(piece: gamePiece): List<number> {
         var rawMoves = piece.moveSet.ToArray().filter((move) => {
@@ -282,6 +450,10 @@ export namespace rulesHelper {
         return new List<number>(locations);
 
     }
+
+    //#endregion
+
+    //#region blocks
 
     function checkBlocks(piece: gamePiece, locations: List<number>, player: player, isOpponent: boolean = false): List<number> {
         let res = new List<number>();
@@ -567,9 +739,8 @@ export namespace rulesHelper {
         return locations.Except(blocked);
     }
 
+    //#endregion
 
-    export enum line {
-        plus8, minus8, plus9, minus9, plus7, minus7, leftSide, rightSide
-    }
+
 
 }
