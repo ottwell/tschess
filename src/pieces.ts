@@ -17,7 +17,7 @@ export class gamePiece {
         this.isDead = isdead;
         this.currentLocation = location;
         this.moveSet = getMoveSet(this);
-        this.availableLocations = new List<number>();
+        this.availableLocations = getInitialAvailableLocations(this);
         this.init();
     }
 
@@ -83,6 +83,23 @@ function getMoveSet(piece: gamePiece): List < number > {
             return new List < number > ([-9, -8, -7, -1, 1, 7, 8, 9]);
     }
     return new List < number > ([]);
+}
+
+function getInitialAvailableLocations(piece: gamePiece): List<number> {
+    var x = piece.currentLocation;
+    switch (piece.type) {
+        case pieceTypes.pawn:
+            if(piece.isWhite)
+                return new List<number>([x + 7, x + 8, x + 9, x + 16]);
+            else
+                return new List<number>([x - 16, x - 9, x - 8, x - 7]);
+        case pieceTypes.knight:
+            if(piece.isWhite)
+                return new List<number>([x + 15, x + 17]);
+            else
+                return new List<number>([x - 15, x - 17]);
+    }
+    return new List<number> ();
 }
 
 export enum pieceTypes {

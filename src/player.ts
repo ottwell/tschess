@@ -3,15 +3,12 @@ import {
     rulesHelper
 } from "./helpers/movementRules";
 import {
-    movementHelper as moveHandler
+    movementHelper as moveHandler, movementHelper
 } from "./helpers/movementHelper";
 import {
     move
 }from "./helpers/movementHelper";
 import { game } from './game';
-import {
-    threatHelper
-} from "./helpers/threatHelper";
 import {
     visualUI as visHelper
 } from "./helpers/visualUI";
@@ -29,7 +26,6 @@ export class player {
     isInCheck: boolean;
     pieces: List<gamePiece>;
     occupiedTiles: List<initializer.occupiedTile>;
-    threats: List<threatHelper.threat>;
     currentActivePiece: gamePiece;
     moves: List<move>;
 
@@ -40,17 +36,7 @@ export class player {
         this.isInCheck = false;
         this.pieces = initializer.initPieces(this.id);
         this.occupiedTiles = initializer.initOccupiedTiles(this);
-        this.threats = initializer.initThreats(this);
         this.moves = new List<move>();
-    }
-
-
-
-    checkMove(piece: gamePiece, game: game): any {
-        game.currentPlayer.currentActivePiece = piece;
-        //check if piece can move without exposing king, then get all possible locations
-        piece.availableLocations = rulesHelper.checkAvailableMoves(piece, game);
-        piece.availableLocations.ForEach((tile) => { visHelper.highlightTile(tile) });
     }
 
     move(game: game, target: number, callback: (game: game) => void): void {
@@ -68,6 +54,7 @@ export class player {
         visHelper.move(startPoint.id, destination.id);
         callback(game);
     }
+
 }
 
 

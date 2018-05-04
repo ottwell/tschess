@@ -21,11 +21,21 @@ export namespace rulesHelper {
     //public 
     export function checkAvailableMoves(piece: gamePiece, game: game): List<number> {
         let initialLegalMoves = checkBoundaries(piece);
+        if(initialLegalMoves.Count() == 0) return initialLegalMoves;
         let legalKingProtectionMoves = exposingKing(piece, game, initialLegalMoves);
         if(legalKingProtectionMoves.Count() == 0) return legalKingProtectionMoves;
         let legalBoardMoves = checkBlocks(piece, legalKingProtectionMoves, game.currentPlayer);
+        if(legalBoardMoves.Count() == 0) return legalBoardMoves;
         let legalBoardMoves2 = checkBlocks(piece, legalBoardMoves, game.nonCurrentPlayer, true);
         return legalBoardMoves2;
+    }
+
+    export function checkKingAvailableMoves(king: king, game: game): List<number> {
+        let initialLegalMoves = checkBoundaries(king);
+        if(initialLegalMoves.Count() == 0) return initialLegalMoves;
+        let legalBoardMoves = checkBlocks(king, initialLegalMoves, game.currentPlayer);
+        if(legalBoardMoves.Count() == 0) return legalBoardMoves;
+        return checkKingOnlyMoves(legalBoardMoves, game.nonCurrentPlayer);
     }
 
     export function isAttack(tiles: List<number>, targetTile: initializer.occupiedTile): boolean {
@@ -58,7 +68,9 @@ export namespace rulesHelper {
         let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
         if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
         let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
-        return initialLegalMoves.Intersect(totalLineMoves); //return only moves that are part of the piece moveset and are on the line
+        let legalMoves = initialLegalMoves.Intersect(totalLineMoves);
+        if(initialLegalMoves.Contains(assassin.currentLocation)) legalMoves.Add(assassin.currentLocation);
+        return  legalMoves //return only moves that are part of the piece moveset and are on the line
     }
 
     function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
@@ -474,7 +486,7 @@ export namespace rulesHelper {
                 res = checkBlockQueen(piece, locations, player, isOpponent);
                 break;
             case pieceTypes.king:
-                res = checkBlockQueen(piece, locations, player);
+                res = checkBlockKing(piece, locations, player);
                 break;
         }
         return res;
@@ -490,8 +502,8 @@ export namespace rulesHelper {
             if (plus8 > 64) plus8 = NaN;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
             if (minus8 < 0) minus8 = NaN;
-            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation < piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation <= piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t > piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
             return new List<number>([minus8, leftSide, rightSide, plus8]).Where(y => y !== undefined).Distinct();
         }
         else if (piece.type === pieceTypes.rook) {
@@ -504,8 +516,8 @@ export namespace rulesHelper {
         else if (pieceTypes.queen) {
             let plus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 8 : 0);;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
-            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation < piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation <= piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t > piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
             let plus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 9 : 0);
             let minus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 9 : 0);
             let plus7 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 7 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 7 : 0);
@@ -589,7 +601,7 @@ export namespace rulesHelper {
             }
             else if (diff % 7 === 0) {
                 if (diff > 0) {
-                    while (index < 51) {
+                    while (index < 57) {
                         index += 7;
                         if (locations.Where(x => x === index).Count() > 0)
                             behindBlocked.Add(index);
@@ -683,7 +695,7 @@ export namespace rulesHelper {
             }
             else if (diff % 7 === 0) {
                 if (diff > 0) {
-                    while (index < 51) {
+                    while (index < 56) {
                         index += 7;
                         if (locations.Where(x => x === index).Count() > 0)
                             behindBlocked.Add(index);
@@ -737,6 +749,19 @@ export namespace rulesHelper {
     function checkBlockKing(piece: gamePiece, locations: List<number>, player: player, isOpponent: boolean = false): List<number> {
         let blocked = locations.Intersect(player.occupiedTiles.Select(x => x.id));
         return locations.Except(blocked);
+    }
+
+    function checkKingOnlyMoves(initialLocations: List<number>, enemyPlayer: player): List<number> {
+        let trash = new List<number>();
+        initialLocations.ForEach(location => {
+            enemyPlayer.pieces.ForEach(piece => {
+                if(piece.availableLocations.Where(x => x == location).Count() == 1){
+                    trash.Add(location);
+                    return;
+                }
+            });
+        });
+        return initialLocations.Except(trash);
     }
 
     //#endregion

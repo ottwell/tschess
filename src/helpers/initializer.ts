@@ -4,9 +4,6 @@ import {
     rulesHelper
 } from "../helpers/movementRules";
 import {
-    threatHelper
-} from "../helpers/threatHelper";
-import {
     visualUI as visHelper
 } from "../helpers/visualUI";
 import { game } from "../game";
@@ -40,14 +37,14 @@ export namespace initializer {
         }
         else {
             return new List<gamePiece>([
-                // new pawn("pb1", pieceTypes.pawn, false, false, 49),
-                // new pawn("pb2", pieceTypes.pawn, false, false, 50),
-                // new pawn("pb3", pieceTypes.pawn, false, false, 51),
-                // new pawn("pb4", pieceTypes.pawn, false, false, 52),
-                // new pawn("pb5", pieceTypes.pawn, false, false, 53),
-                // new pawn("pb6", pieceTypes.pawn, false, false, 54),
-                // new pawn("pb7", pieceTypes.pawn, false, false, 55),
-                // new pawn("pb8", pieceTypes.pawn, false, false, 56),
+                new pawn("pb1", pieceTypes.pawn, false, false, 49),
+                new pawn("pb2", pieceTypes.pawn, false, false, 50),
+                new pawn("pb3", pieceTypes.pawn, false, false, 51),
+                new pawn("pb4", pieceTypes.pawn, false, false, 52),
+                new pawn("pb5", pieceTypes.pawn, false, false, 53),
+                new pawn("pb6", pieceTypes.pawn, false, false, 54),
+                new pawn("pb7", pieceTypes.pawn, false, false, 55),
+                new pawn("pb8", pieceTypes.pawn, false, false, 56),
                 new knight("knb1", pieceTypes.knight, false, false, 58),
                 new knight("knb2", pieceTypes.knight, false, false, 63),
                 new tower("tb1", pieceTypes.tower, false, false, 57),
@@ -91,36 +88,18 @@ export namespace initializer {
                 { id: 61, occupant: player.pieces.Where(p => p.id === "kib").First() },
                 { id: 62, occupant: player.pieces.Where(p => p.id === "rb2").First() },
                 { id: 63, occupant: player.pieces.Where(p => p.id === "knb2").First() },
-                { id: 64, occupant: player.pieces.Where(p => p.id === "tb2").First() }
-                // { id: 49, occupant: player.pieces.Where(p => p.id === "pb1").First() },
-                // { id: 50, occupant: player.pieces.Where(p => p.id === "pb2").First() },
-                // { id: 51, occupant: player.pieces.Where(p => p.id === "pb3").First() },
-                // { id: 52, occupant: player.pieces.Where(p => p.id === "pb4").First() },
-                // { id: 53, occupant: player.pieces.Where(p => p.id === "pb5").First() },
-                // { id: 54, occupant: player.pieces.Where(p => p.id === "pb6").First() },
-                // { id: 55, occupant: player.pieces.Where(p => p.id === "pb7").First() },
-                // { id: 56, occupant: player.pieces.Where(p => p.id === "pb8").First() }
+                { id: 64, occupant: player.pieces.Where(p => p.id === "tb2").First() },
+                { id: 49, occupant: player.pieces.Where(p => p.id === "pb1").First() },
+                { id: 50, occupant: player.pieces.Where(p => p.id === "pb2").First() },
+                { id: 51, occupant: player.pieces.Where(p => p.id === "pb3").First() },
+                { id: 52, occupant: player.pieces.Where(p => p.id === "pb4").First() },
+                { id: 53, occupant: player.pieces.Where(p => p.id === "pb5").First() },
+                { id: 54, occupant: player.pieces.Where(p => p.id === "pb6").First() },
+                { id: 55, occupant: player.pieces.Where(p => p.id === "pb7").First() },
+                { id: 56, occupant: player.pieces.Where(p => p.id === "pb8").First() }
             ]);
         }
     }
-
-    export function initThreats(player: player): List<threatHelper.threat> {
-        if (player.id === "white") {
-            return new List<threatHelper.threat>([
-                new threatHelper.threat(20, true),
-                new threatHelper.threat(22, true), 
-            ]);
-        }
-        else {
-            return new List<threatHelper.threat>([
-                new threatHelper.threat(44, false),
-                new threatHelper.threat(46, false), 
-            ]);
-        }
-
-
-    }
-
 
     export function initPlayers(): List<player> {
         return new List<player>([
@@ -141,6 +120,7 @@ export namespace initializer {
     function checkTile(e: Event, tileId: number, game: game): any {
         let pickedPiece = game.currentPlayer.pieces.Where(x => x.currentLocation === tileId).FirstOrDefault();
         if (pickedPiece !== undefined) { // clicked on an active piece
+            game.currentPlayer.currentActivePiece = pickedPiece;
             game.pieceSelected(pickedPiece);
         }
         else { // clicked on an unoccupied tile
