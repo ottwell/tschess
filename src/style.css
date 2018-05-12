@@ -24,10 +24,16 @@
 	background-color:#FFFFFF;
 }
 
-.highlight {
+.highlight-destination {
 	background-color: green;
 	opacity: 0.7;
 }
+
+.highlight-threat {
+	background-color: red;
+	opacity: 0.7;
+}
+
 
 .piece{
 	font-size: 80px;

@@ -61,6 +61,7 @@ export class queen extends gamePiece {
 export class king extends gamePiece {
     canTowerSwitch: boolean = true;
     isInCheck: boolean = false;
+    potentialAssassins: List<gamePiece>
 
 }
 
@@ -90,9 +91,9 @@ function getInitialAvailableLocations(piece: gamePiece): List<number> {
     switch (piece.type) {
         case pieceTypes.pawn:
             if(piece.isWhite)
-                return new List<number>([x + 7, x + 8, x + 9, x + 16]);
+                return new List<number>([x + 8, x + 16]);
             else
-                return new List<number>([x - 16, x - 9, x - 8, x - 7]);
+                return new List<number>([x - 16, x - 8]);
         case pieceTypes.knight:
             if(piece.isWhite)
                 return new List<number>([x + 15, x + 17]);

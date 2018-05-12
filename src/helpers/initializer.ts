@@ -137,5 +137,8 @@ export namespace initializer {
         }
     }
 
+    export interface Dictionary<T> { [key: string]: T; }
+
+
     
 }

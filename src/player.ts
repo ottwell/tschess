@@ -21,6 +21,7 @@ import {
 
 
 export class player {
+    name: string;
     id: string;
     isCurrent: boolean;
     isInCheck: boolean;
@@ -33,6 +34,7 @@ export class player {
     constructor(id: string) {
         this.id = id;
         this.isCurrent = this.id == "white" ? true : false;
+        this.name = this.id == "white" ? "Player 1" : "Player 2";
         this.isInCheck = false;
         this.pieces = initializer.initPieces(this.id);
         this.occupiedTiles = initializer.initOccupiedTiles(this);

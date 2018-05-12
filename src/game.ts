@@ -10,6 +10,9 @@ import {
     initializer
 } from "./helpers/initializer";
 import {
+    checkHelper
+} from "./helpers/checkHelper";
+import {
     List
 } from "../node_modules/linqts/dist/linq";
 
@@ -27,17 +30,16 @@ export class game {
         this.nonCurrentPlayer = this.players.Where(x => x.id === "black").FirstOrDefault();
         this.currentPlayer = this.players.Where(x => x.id === "white").FirstOrDefault();
         initializer.initTiles(this);
-        console.log(this);
     }
 
 
     pieceSelected(piece: gamePiece): void {
         visHelper.removeAllHighlights();
-        piece.availableLocations.ForEach((tile) => { visHelper.highlightTile(tile) });
+        piece.availableLocations.ForEach((tile) => { visHelper.highlightTile(tile, visHelper.classNames["destination"]) });
     }
 
     tileSelected(tileId: number): void {
-        visHelper.removeAllHighlights();
+        visHelper.removeHighlight(visHelper.classNames["destination"]);
         if (this.currentPlayer.currentActivePiece) {
             if (this.currentPlayer.currentActivePiece.availableLocations.Contains(tileId)) {
                 this.currentPlayer.move(this, tileId, this.initCheckList);
@@ -46,6 +48,7 @@ export class game {
     }
 
     initCheckList(game: game): void {
+        visHelper.removeHighlight(visHelper.classNames["threat"]);
         //1. check current player available moves
         game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
             element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
@@ -57,11 +60,38 @@ export class game {
         game.currentPlayer = nonCurrent;
         game.nonCurrentPlayer = current;
         //3. check check + check current king moves
-        game.currentPlayer.pieces.Where(x => x.type == pieceTypes.king).FirstOrDefault().availableLocations = rulesHelper.checkKingAvailableMoves(game.currentPlayer.pieces.Where(x => x.type == pieceTypes.king).FirstOrDefault() as king, game);
-        //4. check new current player moves
-        game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
-            element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
-        });
-        
+        let king = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
+        king.availableLocations = rulesHelper.checkKingAvailableMoves(king, game);
+        king = checkHelper.isUnderCheck(king, game.nonCurrentPlayer)
+        if (king.isInCheck) {
+            king.potentialAssassins.ToArray().forEach(piece => {
+                visHelper.highlightTile(piece.currentLocation, visHelper.classNames["threat"]);
+            });
+            if (king.potentialAssassins.Count() > 1) {
+                if (king.availableLocations.Count() === 0){
+                    alert('game over')
+                } 
+                else game.currentPlayer.pieces.Where(y => y.type !== pieceTypes.king).ForEach(piece => piece.availableLocations.RemoveAll(x => x > 0)) //only the king can move in this situation
+            }
+            else {
+                let attacker = king.potentialAssassins.FirstOrDefault();
+                let attackerLocation = attacker.currentLocation;
+                let attackerLine = rulesHelper.getLine(attacker, king);
+                let attackerPath = rulesHelper.getLocationsBetweenTwoPieces(attackerLine, attacker.currentLocation, king.currentLocation);
+                game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
+                    element.availableLocations = checkHelper.checkAvailableMoves(element, attacker, attackerPath);
+                });
+                //check if check mate
+                if (king.availableLocations.Count() === 0 && game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king && x.availableLocations.Count() === 0).Count() === 0) {
+                    alert('game over')
+                }
+            }
+        }
+        else { // non check thread
+            //4. check new current player moves for all pieces except the king
+            game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
+                element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
+            });
+        }
     }
 }

@@ -1,20 +1,39 @@
 export namespace visualUI{
-    export function highlightTile(id: number): void {
+    
+    export var classNames: { [key : string]: string} = {
+        destination: "highlight-destination",
+        threat: "highlight-threat"
+    };
+
+    export function highlightTile(id: number, className: string ): void {
         var tile = document.getElementById(id.toString());
         if (tile) {
-            tile.classList.add("highlight");
+            tile.classList.add(className);
             //tile.innerText = tile.id;
         }
     }
 
     export function removeAllHighlights(): void {
-        let elements = document.querySelectorAll(".highlight");
+        let elements = document.querySelectorAll(".piece");
         if(elements){
             [].forEach.call(elements, (el: HTMLElement) => {
-                el.classList.remove("highlight");
+                if(el.classList.contains('white_square'))
+                    el.className = 'piece white_square';            
+                else
+                    el.className = 'piece black_square';            
             });
         }
     }
+
+    export function removeHighlight(className: string): void {
+        let elements = document.querySelectorAll(".piece");
+        if(elements){
+            [].forEach.call(elements, (el: HTMLElement) => {
+                el.classList.remove(className);
+            });
+        }
+    }
+
 
     export function move(from: number, to: number){
         let pieceHtmlText = document.getElementById(from.toString()).innerText;
@@ -24,3 +43,4 @@ export namespace visualUI{
     }
 
 }
+

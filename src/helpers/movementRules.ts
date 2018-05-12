@@ -21,20 +21,20 @@ export namespace rulesHelper {
     //public 
     export function checkAvailableMoves(piece: gamePiece, game: game): List<number> {
         let initialLegalMoves = checkBoundaries(piece);
-        if(initialLegalMoves.Count() == 0) return initialLegalMoves;
+        if (initialLegalMoves.Count() == 0) return initialLegalMoves;
         let legalKingProtectionMoves = exposingKing(piece, game, initialLegalMoves);
-        if(legalKingProtectionMoves.Count() == 0) return legalKingProtectionMoves;
+        if (legalKingProtectionMoves.Count() == 0) return legalKingProtectionMoves;
         let legalBoardMoves = checkBlocks(piece, legalKingProtectionMoves, game.currentPlayer);
-        if(legalBoardMoves.Count() == 0) return legalBoardMoves;
+        if (legalBoardMoves.Count() == 0) return legalBoardMoves;
         let legalBoardMoves2 = checkBlocks(piece, legalBoardMoves, game.nonCurrentPlayer, true);
         return legalBoardMoves2;
     }
 
     export function checkKingAvailableMoves(king: king, game: game): List<number> {
         let initialLegalMoves = checkBoundaries(king);
-        if(initialLegalMoves.Count() == 0) return initialLegalMoves;
+        if (initialLegalMoves.Count() == 0) return initialLegalMoves;
         let legalBoardMoves = checkBlocks(king, initialLegalMoves, game.currentPlayer);
-        if(legalBoardMoves.Count() == 0) return legalBoardMoves;
+        if (legalBoardMoves.Count() == 0) return legalBoardMoves;
         return checkKingOnlyMoves(legalBoardMoves, game.nonCurrentPlayer);
     }
 
@@ -48,85 +48,7 @@ export namespace rulesHelper {
         return false;
     }
 
-
-
-
-
-
-
-    //#region king protection
-
-    function exposingKing(piece: gamePiece, game: game, initialLegalMoves: List<number>): List<number> {
-        let result = new List<number>();
-        let target = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
-        if (!isDirectLine(piece, target)) return initialLegalMoves; //1.is there a direct line between the moving piece and its king
-        let line = getLine(piece, target);
-        let locationsToCheck1 = getLocationsBetweenTwoPieces(line, piece.currentLocation, target.currentLocation);
-        if (blockersInLocations(locationsToCheck1, game)) return initialLegalMoves; //2. are there other pieces between the moving piece and its king
-        let assassin = potentialAssassin(line, piece.currentLocation, game); //3. is there an enemy piece in line that can kill the king
-        if (!assassin) return initialLegalMoves;
-        let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
-        if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
-        let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
-        let legalMoves = initialLegalMoves.Intersect(totalLineMoves);
-        if(initialLegalMoves.Contains(assassin.currentLocation)) legalMoves.Add(assassin.currentLocation);
-        return  legalMoves //return only moves that are part of the piece moveset and are on the line
-    }
-
-    function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
-        let AlliedLocations = game.currentPlayer.occupiedTiles.Select(x => x.id);
-        let enemyLocations = game.nonCurrentPlayer.occupiedTiles.Select(x => x.id);
-        if (AlliedLocations.Intersect(locationsToCheck).Count() > 0) return true;
-        if (enemyLocations.Intersect(locationsToCheck).Count() > 0) return true;
-        return false;
-    }
-
-    function isDirectLine(defender: gamePiece, target: gamePiece): boolean {
-        let diff = Math.abs(defender.currentLocation - target.currentLocation);
-        if (diff % 9 === 0) return true;
-        if (diff % 8 === 0) return true;
-        if (diff % 7 === 0) return true;
-        if (diff > 7) return false;
-        if (sameRow(defender.currentLocation, target.currentLocation)) return true;
-        return false;
-    }
-
-    function getLine(assassin: gamePiece, target: gamePiece): number {
-        let diff = assassin.currentLocation - target.currentLocation;
-        if (diff % 9 === 0) {
-            if (diff > 0) return 9;
-            else return -9
-        }
-        if (diff % 8 === 0) {
-            if (diff > 0) return 8;
-            else return -8
-        }
-        if (diff % 7 === 0) {
-            if (diff > 0) return 7;
-            else return -7;
-        }
-        if (diff > 0) return 1;
-        else return -1;
-    }
-
-
-    function sameRow(location1: number, location2: number): boolean {
-        let row1 = Math.floor(location1 / 8);
-        let row2 = Math.floor(location2 / 8);
-        if (location1 % 8 !== 0 && location2 % 8 !== 0) {
-            if (row1 === row2) return true;
-        }
-        if (location1 % 8 === 0) {
-            if (row1 - 1 === row2) return true;
-        }
-        if (location2 % 8 === 0) {
-            if (row2 - 1 === row1) return true;
-        }
-        return false;
-    }
-
-
-    function getLocationsBetweenTwoPieces(line: number, from: number, to: number): List<number> {
+    export function getLocationsBetweenTwoPieces(line: number, from: number, to: number): List<number> {
         let result = new List<number>();
         let bigNum = from > to ? from : to;
         let smallNum = from > to ? to : from;
@@ -190,6 +112,81 @@ export namespace rulesHelper {
         }
         return result;
     }
+
+    export function getLine(assassin: gamePiece, target: gamePiece): number {
+        let diff = assassin.currentLocation - target.currentLocation;
+        if (diff % 9 === 0) {
+            if (diff > 0) return 9;
+            else return -9
+        }
+        if (diff % 8 === 0) {
+            if (diff > 0) return 8;
+            else return -8
+        }
+        if (diff % 7 === 0) {
+            if (diff > 0) return 7;
+            else return -7;
+        }
+        if (diff > 0) return 1;
+        else return -1;
+    }
+
+
+
+    //#region king protection
+
+    function exposingKing(piece: gamePiece, game: game, initialLegalMoves: List<number>): List<number> {
+        let result = new List<number>();
+        let target = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
+        if (!isDirectLine(piece, target)) return initialLegalMoves; //1.is there a direct line between the moving piece and its king
+        let line = getLine(piece, target);
+        let locationsToCheck1 = getLocationsBetweenTwoPieces(line, piece.currentLocation, target.currentLocation);
+        if (blockersInLocations(locationsToCheck1, game)) return initialLegalMoves; //2. are there other pieces between the moving piece and its king
+        let assassin = potentialAssassin(line, piece.currentLocation, game); //3. is there an enemy piece in line that can kill the king
+        if (!assassin) return initialLegalMoves;
+        let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
+        if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
+        let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
+        let legalMoves = initialLegalMoves.Intersect(totalLineMoves);
+        if (initialLegalMoves.Contains(assassin.currentLocation)) legalMoves.Add(assassin.currentLocation);
+        return legalMoves //return only moves that are part of the piece moveset and are on the line
+    }
+
+    function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
+        let AlliedLocations = game.currentPlayer.occupiedTiles.Select(x => x.id);
+        let enemyLocations = game.nonCurrentPlayer.occupiedTiles.Select(x => x.id);
+        if (AlliedLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        if (enemyLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        return false;
+    }
+
+    function isDirectLine(defender: gamePiece, target: gamePiece): boolean {
+        let diff = Math.abs(defender.currentLocation - target.currentLocation);
+        if (diff % 9 === 0) return true;
+        if (diff % 8 === 0) return true;
+        if (diff % 7 === 0) return true;
+        if (diff > 7) return false;
+        if (sameRow(defender.currentLocation, target.currentLocation)) return true;
+        return false;
+    }
+
+    function sameRow(location1: number, location2: number): boolean {
+        let row1 = Math.floor(location1 / 8);
+        let row2 = Math.floor(location2 / 8);
+        if (location1 % 8 !== 0 && location2 % 8 !== 0) {
+            if (row1 === row2) return true;
+        }
+        if (location1 % 8 === 0) {
+            if (row1 - 1 === row2) return true;
+        }
+        if (location2 % 8 === 0) {
+            if (row2 - 1 === row1) return true;
+        }
+        return false;
+    }
+
+
+
 
     function getLocationsBetweenPieceAndBoundary(line: number, from: number): List<number> {
         let result = new List<number>();
@@ -553,9 +550,11 @@ export namespace rulesHelper {
                 locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c > pawn.currentLocation).ToList());
         }
         if (!pawn.isFirstMove) {
-            if (isOpponent)
-                return locations;
-            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
+            if (isOpponent){
+                return locations.Except(player.occupiedTiles.Where(z => Math.abs(z.id - pawn.currentLocation) === 8).Select(t => t.id).ToList());
+            }
+                
+            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());//xxxxxxx
         }
         else {
             let _tempMoves = locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
@@ -755,7 +754,7 @@ export namespace rulesHelper {
         let trash = new List<number>();
         initialLocations.ForEach(location => {
             enemyPlayer.pieces.ForEach(piece => {
-                if(piece.availableLocations.Where(x => x == location).Count() == 1){
+                if (piece.availableLocations.Where(x => x == location).Count() == 1) {
                     trash.Add(location);
                     return;
                 }
