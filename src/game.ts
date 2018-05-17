@@ -14,7 +14,7 @@ import {
 } from "./helpers/checkHelper";
 import {
     List
-} from "../node_modules/linqts/dist/linq";
+} from "../node_modules/linqts_new/dist/linq";
 
 
 
@@ -69,7 +69,7 @@ export class game {
             });
             if (king.potentialAssassins.Count() > 1) {
                 if (king.availableLocations.Count() === 0){
-                    alert('game over')
+                    checkHelper.announceWinner(game.nonCurrentPlayer)
                 } 
                 else game.currentPlayer.pieces.Where(y => y.type !== pieceTypes.king).ForEach(piece => piece.availableLocations.RemoveAll(x => x > 0)) //only the king can move in this situation
             }
@@ -83,7 +83,7 @@ export class game {
                 });
                 //check if check mate
                 if (king.availableLocations.Count() === 0 && game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king && x.availableLocations.Count() === 0).Count() === 0) {
-                    alert('game over')
+                    checkHelper.announceWinner(game.nonCurrentPlayer)
                 }
             }
         }

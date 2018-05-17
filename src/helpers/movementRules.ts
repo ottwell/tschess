@@ -13,7 +13,7 @@ import { initializer } from './initializer';
 
 import {
     List
-} from '../../node_modules/linqts/dist/linq';
+} from '../../node_modules/linqts_new/dist/linq'
 import { game } from '../game';
 
 export namespace rulesHelper {
@@ -554,17 +554,16 @@ export namespace rulesHelper {
                 return locations.Except(player.occupiedTiles.Where(z => Math.abs(z.id - pawn.currentLocation) === 8).Select(t => t.id).ToList());
             }
                 
-            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());//xxxxxxx
+            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
         }
         else {
-            let _tempMoves = locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
-            if (_tempMoves.Contains(piece.currentLocation + 16) && !_tempMoves.Contains(piece.currentLocation + 8)) {
-                _tempMoves.Remove(piece.currentLocation + 16);
+            if (locations.Contains(piece.currentLocation + 16) && !locations.Contains(piece.currentLocation + 8)) {
+                locations.Remove(piece.currentLocation + 16);
             }
-            else if (_tempMoves.Contains(piece.currentLocation - 16) && !_tempMoves.Contains(piece.currentLocation - 8)) {
-                _tempMoves.Remove(piece.currentLocation - 16);
+            else if (locations.Contains(piece.currentLocation - 16) && !locations.Contains(piece.currentLocation - 8)) {
+                locations.Remove(piece.currentLocation - 16);
             }
-            return _tempMoves;
+            return locations;
         }
     }
 

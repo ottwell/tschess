@@ -17,7 +17,7 @@ import {
 } from "./helpers/initializer";
 import {
     List
-} from "../node_modules/linqts/dist/linq";
+} from "../node_modules/linqts_new/dist/linq";
 
 
 export class player {

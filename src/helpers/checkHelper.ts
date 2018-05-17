@@ -6,7 +6,7 @@ import {
 } from "../helpers/movementRules";
 import {
     List
-} from "../../node_modules/linqts/dist/linq";
+} from "../../node_modules/linqts_new/dist/linq";
 
 export namespace checkHelper {
      export function isUnderCheck(king: king, attackingPlayer: player): king {
@@ -31,5 +31,10 @@ export namespace checkHelper {
          }
          result = piece.availableLocations.Intersect(relevantLocations);
          return result;
+     }
+
+     export function announceWinner(winner: player){
+         document.getElementById('winnerAnnouncment').innerText = winner.name + " wins!!!";
+         document.getElementById('chessboard').classList.add('disabled-board');
      }
 }

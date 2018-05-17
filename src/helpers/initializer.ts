@@ -9,7 +9,7 @@ import {
 import { game } from "../game";
 import {
     List
-} from "../../node_modules/linqts/dist/linq";
+} from "../../node_modules/linqts_new/dist/linq";
 
 
 export namespace initializer {

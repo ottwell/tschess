@@ -13,14 +13,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "clean-webpack-plugin": "^0.1.18",
-    "css-loader": "^0.28.9",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^0.28.11",
     "html-webpack-plugin": "^2.29.0",
     "style-loader": "^0.18.2",
-    "webpack": "^3.0.0",
-    "webpack-dev-server": "^2.11.1"
+    "webpack": "^3.12.0",
+    "webpack-dev-server": "^2.11.2"
   },
   "dependencies": {
-    "linqts": "^1.11.0"
+    "linqts": "^1.11.0",
+    "log4js": "^2.6.1"
   }
 }
