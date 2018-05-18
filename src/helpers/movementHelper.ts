@@ -14,6 +14,10 @@ import { initializer } from './initializer';
 import {
     rulesHelper
 } from "./movementRules";
+import {
+    locationCheckLog
+} from './logger';
+
 
 import {
     List
@@ -47,7 +51,9 @@ export namespace movementHelper {
     export function handlePlayersMove (game: game, startPoint: initializer.occupiedTile, dest: initializer.occupiedTile, isAttack: boolean, victim: any): game {
         game.currentPlayer.occupiedTiles.Remove(startPoint);
         game.currentPlayer.occupiedTiles.Add(dest);
-        game.currentPlayer.moves.Add(new move(startPoint.id, dest.id, game.currentPlayer.currentActivePiece, isAttack, victim))
+        let boardMove = new move(startPoint.id, dest.id, game.currentPlayer.currentActivePiece, isAttack, game.currentPlayer, victim);
+        game.currentPlayer.moves.Add(boardMove);
+        game.log.moves.Add(boardMove);
         if(isAttack){
             game.nonCurrentPlayer = handleAttack(game.nonCurrentPlayer, dest, victim);
         }
@@ -69,15 +75,19 @@ export class move{
     origin: number;
     destination: number;
     movingPiece: gamePiece;
+    movingPlayer: player
     victim: gamePiece
     isAttack: boolean;
+    followingMoveChecks: List<locationCheckLog>;
 
-    constructor(o: number, d: number, p: gamePiece, i: boolean, v: any){
+    constructor(o: number, d: number, p: gamePiece, i: boolean, pp: player, v: any){
         this.origin = o;
         this.destination = d;
         this.movingPiece = p;
         this.isAttack = i;
         this.victim = v;
+        this.movingPlayer = pp;
+        this.followingMoveChecks = new List<locationCheckLog>();
     }
 
 }

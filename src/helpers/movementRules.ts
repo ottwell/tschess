@@ -15,18 +15,28 @@ import {
     List
 } from '../../node_modules/linqts_new/dist/linq'
 import { game } from '../game';
+import {
+    locationCheckLog
+} from './logger';
+
 
 export namespace rulesHelper {
 
     //public 
     export function checkAvailableMoves(piece: gamePiece, game: game): List<number> {
+        let log = new locationCheckLog(piece.id);
         let initialLegalMoves = checkBoundaries(piece);
+        log.movesAfterBoundaryCheck = initialLegalMoves;
         if (initialLegalMoves.Count() == 0) return initialLegalMoves;
         let legalKingProtectionMoves = exposingKing(piece, game, initialLegalMoves);
+        log.movesAfterKingExposureCheck = legalKingProtectionMoves;
         if (legalKingProtectionMoves.Count() == 0) return legalKingProtectionMoves;
         let legalBoardMoves = checkBlocks(piece, legalKingProtectionMoves, game.currentPlayer);
+        log.movesAfterBlockCheckFriendly = legalBoardMoves;
         if (legalBoardMoves.Count() == 0) return legalBoardMoves;
         let legalBoardMoves2 = checkBlocks(piece, legalBoardMoves, game.nonCurrentPlayer, true);
+        log.movesAfterBlockCheckEnemy = legalBoardMoves2;
+        game.log.moves.LastOrDefault().followingMoveChecks.Add(log);
         return legalBoardMoves2;
     }
 

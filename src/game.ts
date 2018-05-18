@@ -12,6 +12,10 @@ import {
 import {
     checkHelper
 } from "./helpers/checkHelper";
+ import {
+     gameLog
+ } from './helpers/logger';
+
 import {
     List
 } from "../node_modules/linqts_new/dist/linq";
@@ -24,11 +28,13 @@ export class game {
     players: List<player>;
     currentPlayer: player;
     nonCurrentPlayer: player;
+    log: gameLog;
 
     init() {
         this.players = initializer.initPlayers();
         this.nonCurrentPlayer = this.players.Where(x => x.id === "black").FirstOrDefault();
         this.currentPlayer = this.players.Where(x => x.id === "white").FirstOrDefault();
+        this.log = new gameLog();
         initializer.initTiles(this);
     }
 
@@ -95,3 +101,4 @@ export class game {
         }
     }
 }
+
