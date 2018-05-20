@@ -24,7 +24,11 @@ export class gamePiece {
 
     init(): void {
         let boardTile = document.getElementById(this.currentLocation.toString());
-        boardTile.innerHTML = getPieceIcon(this.isWhite, this.type);
+        let span  = document.createElement('span');
+        span.innerHTML = getPieceIcon(this.isWhite, this.type);
+        span.classList.add('animated');
+        span.classList.add('fadeIn');
+        boardTile.appendChild(span);
         boardTile.classList.add("piece");
     }
 

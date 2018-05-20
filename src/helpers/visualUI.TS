@@ -36,10 +36,12 @@ export namespace visualUI{
 
 
     export function move(from: number, to: number){
-        let pieceHtmlText = document.getElementById(from.toString()).innerText;
-        document.getElementById(from.toString()).innerText = "";
-        document.getElementById(to.toString()).innerText = pieceHtmlText;
-
+        let span = document.getElementById(from.toString()).childNodes[0];
+        document.getElementById(from.toString()).removeChild(span);
+        if(document.getElementById(to.toString()).childElementCount > 0){
+            document.getElementById(to.toString()).removeChild(document.getElementById(to.toString()).childNodes[0]);
+        }
+        document.getElementById(to.toString()).appendChild(span);
     }
 
 }

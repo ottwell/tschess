@@ -65,9 +65,11 @@ export class game {
         let nonCurrent = game.nonCurrentPlayer
         game.currentPlayer = nonCurrent;
         game.nonCurrentPlayer = current;
-        //3. check check + check current king moves
+        //3. check current player moves for all pieces + check check 
         let king = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
-        king.availableLocations = rulesHelper.checkKingAvailableMoves(king, game);
+        game.currentPlayer.pieces.ForEach(element => {
+            element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
+        });
         king = checkHelper.isUnderCheck(king, game.nonCurrentPlayer)
         if (king.isInCheck) {
             king.potentialAssassins.ToArray().forEach(piece => {
@@ -92,12 +94,6 @@ export class game {
                     checkHelper.announceWinner(game.nonCurrentPlayer)
                 }
             }
-        }
-        else { // non check thread
-            //4. check new current player moves for all pieces except the king
-            game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
-                element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
-            });
         }
     }
 }
