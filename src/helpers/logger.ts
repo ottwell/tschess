@@ -25,6 +25,7 @@ export class locationCheckLog {
     movesAfterKingExposureCheck: List<number>;
     movesAfterBlockCheckFriendly: List<number>;
     movesAfterBlockCheckEnemy: List<number>;
+    movesAfterCheckCheck: List<number>;
 
     constructor(piece: string){
         this.pieceName = piece;

@@ -509,8 +509,8 @@ export namespace rulesHelper {
             if (plus8 > 64) plus8 = NaN;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
             if (minus8 < 0) minus8 = NaN;
-            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation <= piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t > piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
             return new List<number>([minus8, leftSide, rightSide, plus8]).Where(y => y !== undefined).Distinct();
         }
         else if (piece.type === pieceTypes.rook) {
@@ -523,8 +523,8 @@ export namespace rulesHelper {
         else if (pieceTypes.queen) {
             let plus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 8 : 0);;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
-            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation <= piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t > piece.currentLocation % 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
             let plus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 9 : 0);
             let minus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 9 : 0);
             let plus7 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 7 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 7 : 0);
@@ -535,6 +535,8 @@ export namespace rulesHelper {
 
     function checkBlockPawn(piece: gamePiece, locations: List<number>, player: player, isOpponent: boolean = false): List<number> { //includes color related move check
         let pawn = piece as pawn;
+        let blockers = player.occupiedTiles.Where(x => Math.abs(x.id - piece.currentLocation) === 8 || Math.abs(x.id - piece.currentLocation) === 16).Select(y => y.id);
+        locations = locations.Except(blockers)
         if (pawn.isWhite) {
             if (isOpponent) {
                 let victim1 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation + 7).FirstOrDefault();
@@ -542,10 +544,10 @@ export namespace rulesHelper {
                     locations = locations.Except(locations.Where(x => x === pawn.currentLocation + 7))
                 let victim2 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation + 9).FirstOrDefault();
                 if (!victim2)
-                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation + 9))
+                    locations = locations.Except(locations.Where(x => x === pawn.currentLocation + 9));
             }
-            else
-                locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c < pawn.currentLocation).ToList());
+            locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c < pawn.currentLocation).ToList());
+
         }
         else {
             if (isOpponent) {
@@ -556,25 +558,25 @@ export namespace rulesHelper {
                 if (!victim2)
                     locations = locations.Except(locations.Where(x => x === pawn.currentLocation - 9))
             }
-            else
-                locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c > pawn.currentLocation).ToList());
+            locations = locations.Except(player.occupiedTiles.Select(z => z.id).Where(c => c > pawn.currentLocation).ToList());
         }
-        if (!pawn.isFirstMove) {
-            if (isOpponent){
-                return locations.Except(player.occupiedTiles.Where(z => Math.abs(z.id - pawn.currentLocation) === 8).Select(t => t.id).ToList());
-            }
-                
-            return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
-        }
-        else {
-            if (locations.Contains(piece.currentLocation + 16) && !locations.Contains(piece.currentLocation + 8)) {
-                locations.Remove(piece.currentLocation + 16);
-            }
-            else if (locations.Contains(piece.currentLocation - 16) && !locations.Contains(piece.currentLocation - 8)) {
-                locations.Remove(piece.currentLocation - 16);
-            }
-            return locations;
-        }
+        return locations;
+        // if (!pawn.isFirstMove) {
+        //     if (isOpponent) {
+        //         return locations.Except(player.occupiedTiles.Where(z => Math.abs(z.id - pawn.currentLocation) === 8).Select(t => t.id).ToList());
+        //     }
+
+        //     return locations.Except(player.occupiedTiles.Select(z => z.id).ToList());
+        // }
+        // else {
+        //     if (locations.Contains(piece.currentLocation + 16) && !locations.Contains(piece.currentLocation + 8)) {
+        //         locations.Remove(piece.currentLocation + 16);
+        //     }
+        //     else if (locations.Contains(piece.currentLocation - 16) && !locations.Contains(piece.currentLocation - 8)) {
+        //         locations.Remove(piece.currentLocation - 16);
+        //     }
+        //     return locations;
+        // }
     }
 
     function checkBlockKnight(locations: List<number>, player: player, isOpponent: boolean = false): List<number> {

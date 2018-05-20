@@ -5,6 +5,10 @@ import {
     rulesHelper
 } from "../helpers/movementRules";
 import {
+    locationCheckLog
+} from './logger';
+
+import {
     List
 } from "../../node_modules/linqts_new/dist/linq";
 
@@ -22,14 +26,20 @@ export namespace checkHelper {
          return king;
      }
 
-     export function checkAvailableMoves(piece: gamePiece, attacker: gamePiece ,attackerPath: List<number>): List<number> {
+     export function checkAvailableMoves(piece: gamePiece, attacker: gamePiece ,attackerPath: List<number>, game: game): List<number> {
+         let log = new locationCheckLog(piece.id);
          let result = new List<number>();
          let relevantLocations = new List<number>();
          relevantLocations.Add(attacker.currentLocation);
          if(attacker.type !== pieceTypes.knight){ // a knight cannot be blocked
             relevantLocations.AddRange(attackerPath.ToArray());
          }
+         if(piece.type === pieceTypes.pawn){
+             piece.availableLocations = rulesHelper.checkAvailableMoves(piece, game);
+         }
          result = piece.availableLocations.Intersect(relevantLocations);
+         log.movesAfterCheckCheck = result;
+         game.log.moves.LastOrDefault().followingMoveChecks.Add(log);
          return result;
      }
 

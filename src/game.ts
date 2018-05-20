@@ -40,7 +40,7 @@ export class game {
 
 
     pieceSelected(piece: gamePiece): void {
-        visHelper.removeAllHighlights();
+        visHelper.removeHighlight(visHelper.classNames["destination"]);
         piece.availableLocations.ForEach((tile) => { visHelper.highlightTile(tile, visHelper.classNames["destination"]) });
     }
 
@@ -85,7 +85,7 @@ export class game {
                 let attackerLine = rulesHelper.getLine(attacker, king);
                 let attackerPath = rulesHelper.getLocationsBetweenTwoPieces(attackerLine, attacker.currentLocation, king.currentLocation);
                 game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
-                    element.availableLocations = checkHelper.checkAvailableMoves(element, attacker, attackerPath);
+                    element.availableLocations = checkHelper.checkAvailableMoves(element, attacker, attackerPath, game);
                 });
                 //check if check mate
                 if (king.availableLocations.Count() === 0 && game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king && x.availableLocations.Count() === 0).Count() === 0) {
