@@ -24,6 +24,12 @@ window.onload = () => {
         let piece = game.currentPlayer.pieces.Where(x => x.id === val).First();
         rulesHelper.checkAvailableMoves(piece, game)
     });
+    document.getElementById('debugKing').addEventListener("click", (e: Event) => {
+        let input = document.getElementById('pieceInput') as HTMLInputElement;
+        let val = input.value;
+        let piece = game.currentPlayer.pieces.Where(x => x.id === val).First() as king;
+        rulesHelper.checkKingAvailableMoves(piece, game)
+    });
     document.getElementById('debugCheck').addEventListener("click", (e: Event) => {
         let input = document.getElementById('pieceInput') as HTMLInputElement;
         let val = input.value;

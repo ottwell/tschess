@@ -17,7 +17,7 @@ export namespace checkHelper {
          let location = king.currentLocation;
          let potentialAssassins = attackingPlayer.pieces.Where(x => x.availableLocations.Where(y => y === location).Count() > 0);
          if(potentialAssassins.Count() === 0){
-             king.isInCheck === false;
+             king.isInCheck = false;
              king.potentialAssassins = null;
              return king;
          }
@@ -41,6 +41,15 @@ export namespace checkHelper {
          log.movesAfterCheckCheck = result;
          game.log.moves.LastOrDefault().followingMoveChecks.Add(log);
          return result;
+     }
+
+     export function removeRetreatMoves(king: king, attacker: gamePiece): List<number>{
+        let result = new List<number>();
+        let attackerLocation = attacker.currentLocation;
+        let attackerLine = rulesHelper.getLine(attacker, king, true);
+        let trash = rulesHelper.getLocationsBetweenPieceAndBoundary(attackerLine, attacker.currentLocation);
+        result = king.availableLocations.Except(trash);
+        return result;
      }
 
      export function announceWinner(winner: player){

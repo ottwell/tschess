@@ -67,7 +67,8 @@ export class game {
         game.nonCurrentPlayer = current;
         //3. check current player moves for all pieces + check check 
         let king = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
-        game.currentPlayer.pieces.ForEach(element => {
+        king.availableLocations = rulesHelper.checkKingAvailableMoves(king, game);
+        game.currentPlayer.pieces.Where(y => y.type !== pieceTypes.king).ForEach(element => {
             element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
         });
         king = checkHelper.isUnderCheck(king, game.nonCurrentPlayer)
@@ -76,6 +77,7 @@ export class game {
                 visHelper.highlightTile(piece.currentLocation, visHelper.classNames["threat"]);
             });
             if (king.potentialAssassins.Count() > 1) {
+                king.potentialAssassins.ForEach(attacker => king.availableLocations = checkHelper.removeRetreatMoves(king, attacker))
                 if (king.availableLocations.Count() === 0){
                     checkHelper.announceWinner(game.nonCurrentPlayer)
                 } 
@@ -86,15 +88,18 @@ export class game {
                 let attackerLocation = attacker.currentLocation;
                 let attackerLine = rulesHelper.getLine(attacker, king);
                 let attackerPath = rulesHelper.getLocationsBetweenTwoPieces(attackerLine, attacker.currentLocation, king.currentLocation);
+                king.availableLocations = checkHelper.removeRetreatMoves(king, attacker);
                 game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king).ForEach(element => {
                     element.availableLocations = checkHelper.checkAvailableMoves(element, attacker, attackerPath, game);
                 });
                 //check if check mate
-                if (king.availableLocations.Count() === 0 && game.currentPlayer.pieces.Where(x => x.type != pieceTypes.king && x.availableLocations.Count() === 0).Count() === 0) {
+                game.currentPlayer.pieces.ForEach(piece => console.log(piece.id + ": " + piece.availableLocations.ToArray()))
+                if (game.currentPlayer.pieces.Where(x => x.availableLocations.Count() === 0).Count() === game.currentPlayer.pieces.Count()) {
                     checkHelper.announceWinner(game.nonCurrentPlayer)
                 }
             }
         }
+        game
     }
 }
 

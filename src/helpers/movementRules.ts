@@ -123,8 +123,8 @@ export namespace rulesHelper {
         return result;
     }
 
-    export function getLine(assassin: gamePiece, target: gamePiece): number {
-        let diff = assassin.currentLocation - target.currentLocation;
+    export function getLine(assassin: gamePiece, target: gamePiece, kingToAttacker: boolean = false): number {
+        let diff = kingToAttacker ? target.currentLocation - assassin.currentLocation : assassin.currentLocation - target.currentLocation
         if (diff % 9 === 0) {
             if (diff > 0) return 9;
             else return -9
@@ -141,64 +141,7 @@ export namespace rulesHelper {
         else return -1;
     }
 
-
-
-    //#region king protection
-
-    function exposingKing(piece: gamePiece, game: game, initialLegalMoves: List<number>): List<number> {
-        let result = new List<number>();
-        let target = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
-        if (!isDirectLine(piece, target)) return initialLegalMoves; //1.is there a direct line between the moving piece and its king
-        let line = getLine(piece, target);
-        let locationsToCheck1 = getLocationsBetweenTwoPieces(line, piece.currentLocation, target.currentLocation);
-        if (blockersInLocations(locationsToCheck1, game)) return initialLegalMoves; //2. are there other pieces between the moving piece and its king
-        let assassin = potentialAssassin(line, piece.currentLocation, game); //3. is there an enemy piece in line that can kill the king
-        if (!assassin) return initialLegalMoves;
-        let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
-        if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
-        let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
-        let legalMoves = initialLegalMoves.Intersect(totalLineMoves);
-        if (initialLegalMoves.Contains(assassin.currentLocation)) legalMoves.Add(assassin.currentLocation);
-        return legalMoves //return only moves that are part of the piece moveset and are on the line
-    }
-
-    function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
-        let AlliedLocations = game.currentPlayer.occupiedTiles.Select(x => x.id);
-        let enemyLocations = game.nonCurrentPlayer.occupiedTiles.Select(x => x.id);
-        if (AlliedLocations.Intersect(locationsToCheck).Count() > 0) return true;
-        if (enemyLocations.Intersect(locationsToCheck).Count() > 0) return true;
-        return false;
-    }
-
-    function isDirectLine(defender: gamePiece, target: gamePiece): boolean {
-        let diff = Math.abs(defender.currentLocation - target.currentLocation);
-        if (diff % 9 === 0) return true;
-        if (diff % 8 === 0) return true;
-        if (diff % 7 === 0) return true;
-        if (diff > 7) return false;
-        if (sameRow(defender.currentLocation, target.currentLocation)) return true;
-        return false;
-    }
-
-    function sameRow(location1: number, location2: number): boolean {
-        let row1 = Math.floor(location1 / 8);
-        let row2 = Math.floor(location2 / 8);
-        if (location1 % 8 !== 0 && location2 % 8 !== 0) {
-            if (row1 === row2) return true;
-        }
-        if (location1 % 8 === 0) {
-            if (row1 - 1 === row2) return true;
-        }
-        if (location2 % 8 === 0) {
-            if (row2 - 1 === row1) return true;
-        }
-        return false;
-    }
-
-
-
-
-    function getLocationsBetweenPieceAndBoundary(line: number, from: number): List<number> {
+    export function getLocationsBetweenPieceAndBoundary(line: number, from: number): List<number> {
         let result = new List<number>();
         let rightBoundary = from % 8 == 0 ? from : (Math.ceil(from / 8)) * 8;
         let leftBoundary = from % 8 == 1 ? from : (Math.floor(from / 8)) * 8 + 1;
@@ -257,15 +200,72 @@ export namespace rulesHelper {
                 }
                 break;
             case -7:
-                while (index < 0 && index % 8 != 0) {
+                while (index > 0 && index % 8 != 0) {
                     index -= 7;
-                    if (index < 0)
+                    if (index > 0)
                         result.Add(index);
                 }
                 break;
         }
         return result;
     }
+
+    //#region king protection
+
+    function exposingKing(piece: gamePiece, game: game, initialLegalMoves: List<number>): List<number> {
+        let result = new List<number>();
+        let target = game.currentPlayer.pieces.Where(x => x.type === pieceTypes.king).FirstOrDefault() as king;
+        if (!isDirectLine(piece, target)) return initialLegalMoves; //1.is there a direct line between the moving piece and its king
+        let line = getLine(piece, target);
+        let locationsToCheck1 = getLocationsBetweenTwoPieces(line, piece.currentLocation, target.currentLocation);
+        if (blockersInLocations(locationsToCheck1, game)) return initialLegalMoves; //2. are there other pieces between the moving piece and its king
+        let assassin = potentialAssassin(line, piece.currentLocation, game); //3. is there an enemy piece in line that can kill the king
+        if (!assassin) return initialLegalMoves;
+        let locationsToCheck2 = getLocationsBetweenTwoPieces(line, piece.currentLocation, assassin.currentLocation);
+        if (blockersInLocations(locationsToCheck2, game)) return initialLegalMoves; //4. is the moving piece the only thing between the assassin and the king
+        let totalLineMoves = locationsToCheck1.Concat(locationsToCheck2);
+        let legalMoves = initialLegalMoves.Intersect(totalLineMoves);
+        if (initialLegalMoves.Contains(assassin.currentLocation)) legalMoves.Add(assassin.currentLocation);
+        return legalMoves //return only moves that are part of the piece moveset and are on the line
+    }
+
+    function blockersInLocations(locationsToCheck: List<number>, game: game): boolean {
+        let AlliedLocations = game.currentPlayer.occupiedTiles.Select(x => x.id);
+        let enemyLocations = game.nonCurrentPlayer.occupiedTiles.Select(x => x.id);
+        if (AlliedLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        if (enemyLocations.Intersect(locationsToCheck).Count() > 0) return true;
+        return false;
+    }
+
+    function isDirectLine(defender: gamePiece, target: gamePiece): boolean {
+        let diff = Math.abs(defender.currentLocation - target.currentLocation);
+        if (diff % 9 === 0) return true;
+        if (diff % 8 === 0) return true;
+        if (diff % 7 === 0) return true;
+        if (diff > 7) return false;
+        if (sameRow(defender.currentLocation, target.currentLocation)) return true;
+        return false;
+    }
+
+    function sameRow(location1: number, location2: number): boolean {
+        let row1 = Math.floor(location1 / 8);
+        let row2 = Math.floor(location2 / 8);
+        if (location1 % 8 !== 0 && location2 % 8 !== 0) {
+            if (row1 === row2) return true;
+        }
+        if (location1 % 8 === 0) {
+            if (row1 - 1 === row2) return true;
+        }
+        if (location2 % 8 === 0) {
+            if (row2 - 1 === row1) return true;
+        }
+        return false;
+    }
+
+
+
+
+    
 
     function potentialAssassin(line: number, from: number, game: game): gamePiece {
         let locations = getLocationsBetweenPieceAndBoundary(line, from);
@@ -523,8 +523,8 @@ export namespace rulesHelper {
         else if (pieceTypes.queen) {
             let plus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 8 : 0);;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
-            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && t - piece.currentLocation < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < 8 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => (t - piece.currentLocation > 0) && (t - piece.currentLocation < 7) && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < 7 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
             let plus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 9 : 0);
             let minus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 9 : 0);
             let plus7 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 7 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 7 : 0);
