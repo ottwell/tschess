@@ -36,7 +36,8 @@ export namespace rulesHelper {
         if (legalBoardMoves.Count() == 0) return legalBoardMoves;
         let legalBoardMoves2 = checkBlocks(piece, legalBoardMoves, game.nonCurrentPlayer, true);
         log.movesAfterBlockCheckEnemy = legalBoardMoves2;
-        game.log.moves.LastOrDefault().followingMoveChecks.Add(log);
+        if(game.log.moves.Count() > 0)
+            game.log.moves.LastOrDefault().followingMoveChecks.Add(log);
         return legalBoardMoves2;
     }
 
@@ -523,8 +524,10 @@ export namespace rulesHelper {
         else if (pieceTypes.queen) {
             let plus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 8 : 0);;
             let minus8 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 8 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 8 : 0);
-            let rightSide = locations.Intersect(occupied).Where(t => (t - piece.currentLocation > 0) && (t - piece.currentLocation < 7) && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 1 : 0);
-            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && piece.currentLocation - t < 7 && (t - piece.currentLocation) % 8 !== 0).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 1 : 0);
+            let rightSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && sameRow(t, piece.currentLocation)).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault();
+            if(piece.currentLocation % 8 === 7 && isOpponent) rightSide++;
+            let leftSide = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && sameRow(t, piece.currentLocation)).OrderBy(m => Math.abs(m - piece.currentLocation)).FirstOrDefault();
+            if(piece.currentLocation % 8 === 2 && isOpponent) leftSide--;
             let plus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 9 : 0);
             let minus9 = locations.Intersect(occupied).Where(t => t - piece.currentLocation < 0 && (t - piece.currentLocation) % 9 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() - (isOpponent ? 9 : 0);
             let plus7 = locations.Intersect(occupied).Where(t => t - piece.currentLocation > 0 && (t - piece.currentLocation) % 7 === 0).OrderBy(x => Math.abs(x - piece.currentLocation)).FirstOrDefault() + (isOpponent ? 7 : 0);

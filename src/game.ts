@@ -19,6 +19,7 @@ import {
 import {
     List
 } from "../node_modules/linqts_new/dist/linq";
+import { movementHelper } from "./helpers/movementHelper";
 
 
 
@@ -53,6 +54,18 @@ export class game {
         }
     }
 
+    goBack(): void{
+        if(this.log.moves.Count() > 0){
+            let _endPoint = this.nonCurrentPlayer.occupiedTiles.Where(x => x.id === this.nonCurrentPlayer.moves.Last().destination).FirstOrDefault();
+            let _startPointId = this.nonCurrentPlayer.moves.Last().origin;
+            let _wasAttack = this.nonCurrentPlayer.moves.Last().isAttack;
+            let _victim = this.nonCurrentPlayer.moves.Last().victim;
+            movementHelper.handleReverseMove(this, _endPoint, _startPointId, _wasAttack, _victim);
+            visHelper.move(_endPoint.id, _startPointId);
+            this.initCheckList(this);
+        }
+    }
+
     initCheckList(game: game): void {
         visHelper.removeHighlight(visHelper.classNames["threat"]);
         //1. check current player available moves
@@ -60,6 +73,8 @@ export class game {
             element.availableLocations = rulesHelper.checkAvailableMoves(element, game);
         });
         //2. switch current player
+        if(game.currentPlayer.currentActivePiece != undefined) //undefined happens in reverse check list
+            game.currentPlayer.lastActivePiece = game.currentPlayer.currentActivePiece;
         game.currentPlayer.currentActivePiece = undefined;
         let current = game.currentPlayer;
         let nonCurrent = game.nonCurrentPlayer
@@ -99,7 +114,8 @@ export class game {
                 }
             }
         }
-        game
     }
+
+    
 }
 

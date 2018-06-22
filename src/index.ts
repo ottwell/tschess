@@ -30,6 +30,10 @@ window.onload = () => {
         let piece = game.currentPlayer.pieces.Where(x => x.id === val).First() as king;
         rulesHelper.checkKingAvailableMoves(piece, game)
     });
+    document.getElementById('back').addEventListener("click", (e: Event) => {
+        game.goBack();
+    });
+
     document.getElementById('debugCheck').addEventListener("click", (e: Event) => {
         let input = document.getElementById('pieceInput') as HTMLInputElement;
         let val = input.value;

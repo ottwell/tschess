@@ -10,6 +10,7 @@ export class gamePiece {
     moveSet: List <number> ;
     currentLocation: number;
     availableLocations: List<number>;
+    wasPawn: boolean;
     constructor(id: string, type: pieceTypes, iswhite: boolean, isdead: boolean = false, location: number) {
         this.id = id;
         this.type = type;
@@ -18,6 +19,7 @@ export class gamePiece {
         this.currentLocation = location;
         this.moveSet = getMoveSet(this);
         this.availableLocations = getInitialAvailableLocations(this);
+        this.wasPawn = false;
         this.init();
     }
 
@@ -37,6 +39,7 @@ export class gamePiece {
 export class pawn extends gamePiece {
     canUpgrade: boolean;
     isFirstMove: boolean = true;
+    firstMoveIndex: number = 0;
 
 
 
@@ -55,6 +58,7 @@ export class rook extends gamePiece {
 
 export class tower extends gamePiece {
     canTowerSwitch: boolean = true;
+    firstMoveIndex: number = 0;
 }
 
 export class queen extends gamePiece {
@@ -65,7 +69,8 @@ export class queen extends gamePiece {
 export class king extends gamePiece {
     canTowerSwitch: boolean = true;
     isInCheck: boolean = false;
-    potentialAssassins: List<gamePiece>
+    firstMoveIndex: number = 0;
+    potentialAssassins: List<gamePiece>;
 
 }
 
@@ -116,7 +121,7 @@ export enum pieceTypes {
     king
 }
 
-function getPieceIcon(iswhite: boolean, type: pieceTypes): string {
+export function getPieceIcon(iswhite: boolean, type: pieceTypes): string {
     if (iswhite) {
         switch (type) {
             case pieceTypes.pawn:
