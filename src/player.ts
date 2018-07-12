@@ -47,7 +47,7 @@ export class player {
         let destination = new initializer.occupiedTile(target, game.currentPlayer.currentActivePiece);
         
         startPoint.occupant = undefined;
-        game.currentPlayer.currentActivePiece = moveHandler.handlePieceMove(game.currentPlayer.currentActivePiece, destination.id, game.log.moves.Count());
+        game.currentPlayer.currentActivePiece = moveHandler.handlePieceMove(game, game.currentPlayer.currentActivePiece, destination.id, game.log.moves.Count());
         let isAttack = rulesHelper.isAttack(game.nonCurrentPlayer.occupiedTiles.Select(x => x.id), destination);
         var victim = undefined;
         if (isAttack) {

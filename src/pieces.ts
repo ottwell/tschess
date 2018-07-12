@@ -40,12 +40,6 @@ export class pawn extends gamePiece {
     canUpgrade: boolean;
     isFirstMove: boolean = true;
     firstMoveIndex: number = 0;
-
-
-
-    upgrade() {
-
-    }
 }
 
 export class knight extends gamePiece {

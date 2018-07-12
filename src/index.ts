@@ -6,7 +6,8 @@ import {
 import {
     checkHelper
 } from "./helpers/checkHelper";
-import { gamePiece, pieceTypes, king } from "./pieces";
+import { gamePiece, pieceTypes, king, pawn } from "./pieces";
+import { movementHelper } from "./helpers/movementHelper";
 
 
 window.onload = () => {
@@ -33,7 +34,7 @@ window.onload = () => {
     document.getElementById('back').addEventListener("click", (e: Event) => {
         game.goBack();
     });
-
+    
     document.getElementById('debugCheck').addEventListener("click", (e: Event) => {
         let input = document.getElementById('pieceInput') as HTMLInputElement;
         let val = input.value;

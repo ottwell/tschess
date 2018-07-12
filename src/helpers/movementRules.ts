@@ -296,7 +296,9 @@ export namespace rulesHelper {
         switch (piece.type) { //east and west check specific to piece type
             case pieceTypes.pawn:
                 let _pawn = piece as pawn;
+
                 var locations = rawMoves.filter((move) => {
+
                     if (_pawn.isFirstMove) {
                         return move;
                     }
@@ -305,6 +307,14 @@ export namespace rulesHelper {
                             return move;
                         }
                     }
+                }).filter((move) => {
+                    if(_pawn.currentLocation % 8 === 0){
+                        if(move !== 9 && move !== -7) return move;
+                    }
+                    else if(_pawn.currentLocation % 8 === 1){
+                        if(move !== 7 && move !== -9) return move;
+                    }
+                    else return move
                 }).map((move) => {
                     return move + piece.currentLocation;
                 });
@@ -539,8 +549,13 @@ export namespace rulesHelper {
     function checkBlockPawn(piece: gamePiece, locations: List<number>, player: player, isOpponent: boolean = false): List<number> { //includes color related move check
         let pawn = piece as pawn;
         let blockers = player.occupiedTiles.Where(x => Math.abs(x.id - piece.currentLocation) === 8 || Math.abs(x.id - piece.currentLocation) === 16).Select(y => y.id);
-        locations = locations.Except(blockers)
+        let behindBlockers = new List<number>();
         if (pawn.isWhite) {
+            blockers.ForEach((num) =>{
+                behindBlockers.Add(num + 8);
+            });
+            blockers.AddRange(behindBlockers.ToArray());
+            locations = locations.Except(blockers);
             if (isOpponent) {
                 let victim1 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation + 7).FirstOrDefault();
                 if (!victim1)
@@ -553,6 +568,11 @@ export namespace rulesHelper {
 
         }
         else {
+            blockers.ForEach((num) =>{
+                behindBlockers.Add(num - 8);
+            });
+            blockers.AddRange(behindBlockers.ToArray());
+            locations = locations.Except(blockers);
             if (isOpponent) {
                 let victim1 = player.occupiedTiles.Where(x => x.id === pawn.currentLocation - 7).FirstOrDefault();
                 if (!victim1)
